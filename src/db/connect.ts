@@ -8,31 +8,39 @@ if (!MONGODB_URI) {
 
 const MONGO_OPTIONS = {
   maxPoolSize: 10,
-  minPoolSize: 2,
+  minPoolSize: 0,
   serverSelectionTimeoutMS: 5000,
   socketTimeoutMS: 45000,
 };
 
-let isConnected = false;
+let connectionPromise: Promise<typeof mongoose> | null = null;
 
-export const connectDatabase = async (): Promise<void> => {
-  if (isConnected && mongoose.connection.readyState === 1) {
-    console.log("Using existing MongoDB connection");
-    return;
+export const connectDatabase = async (): Promise<typeof mongoose> => {
+  // Already connected
+  if (mongoose.connection.readyState === 1) {
+    return mongoose;
   }
 
-  try {
-    await mongoose.connect(MONGODB_URI, MONGO_OPTIONS);
-
-    isConnected = true;
-
-    console.log("MongoDB connected successfully");
-    console.log(`MongoDB pool max size: ${MONGO_OPTIONS.maxPoolSize}`);
-  } catch (error) {
-    isConnected = false;
-
-    console.error("MongoDB connection failed:", error);
-
-    throw error;
+  // Connection is already in progress
+  if (connectionPromise) {
+    return connectionPromise;
   }
+
+  connectionPromise = mongoose
+    .connect(MONGODB_URI, MONGO_OPTIONS)
+    .then((connection) => {
+      console.log("MongoDB connected successfully");
+      console.log(`MongoDB pool max size: ${MONGO_OPTIONS.maxPoolSize}`);
+
+      return connection;
+    })
+    .catch((error) => {
+      connectionPromise = null;
+
+      console.error("MongoDB connection failed:", error);
+
+      throw error;
+    });
+
+  return connectionPromise;
 };
