@@ -1,10 +1,17 @@
-import express from "express"; 
+import express from "express";
+
 import { bucket } from "./db/firebase";
+import { errorHandler, notFoundHandler } from "./common/errors/index.js";
+import { databaseMiddleware } from "./common/middleware/database.middleware.js";
 
 const app = express();
 
 app.use(express.json());
 
+/*
+ * Infrastructure routes
+ * These do not require MongoDB.
+ */
 app.get("/api/health", (_req, res) => {
   res.status(200).json({
     success: true,
@@ -12,7 +19,6 @@ app.get("/api/health", (_req, res) => {
   });
 });
 
-// Firebase Storage health check
 app.get("/api/storage-health", async (_req, res) => {
   try {
     const [exists] = await bucket.exists();
@@ -31,5 +37,28 @@ app.get("/api/storage-health", async (_req, res) => {
     });
   }
 });
+
+/*
+ * Database connection middleware
+ *
+ * Everything below this point can safely use MongoDB.
+ */
+app.use(databaseMiddleware);
+
+// Application routes go here
+// app.use("/api/services", serviceRoutes);
+// app.use("/api/projects", projectRoutes);
+// app.use("/api/blogs", blogRoutes);
+// app.use("/api/clients", clientRoutes);
+
+/*
+ * Must be after all routes
+ */
+app.use(notFoundHandler);
+
+/*
+ * Must be the LAST middleware
+ */
+app.use(errorHandler);
 
 export default app;

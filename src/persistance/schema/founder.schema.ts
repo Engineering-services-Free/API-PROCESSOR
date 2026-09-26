@@ -1,9 +1,6 @@
 import { Schema } from "mongoose";
 
-import type {
-  Founder,
-  FounderImage,
-} from "../typings/founder.typings";
+import type { Founder, FounderImage } from "../typings/founder.typings";
 
 const founderImageSchema = new Schema<FounderImage>(
   {
@@ -55,9 +52,17 @@ export const founderSchema = new Schema<Founder>(
       type: String,
       required: true,
     },
+    order: {
+      type: Number,
+      required: true,
+      min: 0,
+      unique: true,
+    },
   },
   {
     timestamps: true,
     versionKey: false,
   },
 );
+
+founderSchema.index({ order: 1 }, { unique: true });

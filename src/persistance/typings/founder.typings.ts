@@ -6,17 +6,10 @@ export interface FounderImage {
 
 export interface Founder {
   name: string;
-
   image: FounderImage;
-
   overview: string;
-
-  /**
-   * Sanitized HTML content containing the founder's
-   * professional experience and career journey.
-   */
   experience: string;
-
+  order: number;
   createdAt: Date;
   updatedAt: Date;
 }
