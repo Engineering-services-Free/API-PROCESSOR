@@ -55,8 +55,7 @@ export const founderSchema = new Schema<Founder>(
     order: {
       type: Number,
       required: true,
-      min: 0,
-      unique: true,
+      min: 0, 
     },
   },
   {

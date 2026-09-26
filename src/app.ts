@@ -1,10 +1,23 @@
 import express from "express";
+import cors from "cors";
 
-import { bucket } from "./db/firebase";
+import { bucket } from "./db/firebase.js";
 import { errorHandler, notFoundHandler } from "./common/errors/index.js";
 import { databaseMiddleware } from "./common/middleware/database.middleware.js";
+import apiRoutes from "../src/routes/index.js";
 
 const app = express();
+
+/*
+ * Global middleware
+ */
+
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+  }),
+);
 
 app.use(express.json());
 
@@ -12,6 +25,7 @@ app.use(express.json());
  * Infrastructure routes
  * These do not require MongoDB.
  */
+
 app.get("/api/health", (_req, res) => {
   res.status(200).json({
     success: true,
@@ -45,11 +59,10 @@ app.get("/api/storage-health", async (_req, res) => {
  */
 app.use(databaseMiddleware);
 
-// Application routes go here
-// app.use("/api/services", serviceRoutes);
-// app.use("/api/projects", projectRoutes);
-// app.use("/api/blogs", blogRoutes);
-// app.use("/api/clients", clientRoutes);
+/*
+ * Application routes
+ */
+app.use(apiRoutes);
 
 /*
  * Must be after all routes
