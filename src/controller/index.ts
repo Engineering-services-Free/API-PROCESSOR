@@ -7,3 +7,4 @@ export * from "./about.controller";
 export * from "./blog.controller";
 export * from "./document.controller";
 export * from "./contact.controller";
+export * from "./auth.controller";

@@ -7,3 +7,4 @@ export * from "./founder.model";
 export * from "./landing.model";
 export * from "./poject.model";
 export * from "./service.model";
+export * from "./user.model";
