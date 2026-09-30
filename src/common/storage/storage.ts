@@ -25,8 +25,6 @@ export const uploadStorageFile = async (
     expires: "03-09-2491",
   });
 
-  console.log(`Storage file uploaded: ${storagePath}`);
-
   return {
     url,
     storagePath,
@@ -40,11 +38,8 @@ export const deleteStorageFile = async (storagePath: string): Promise<void> => {
       return;
     }
 
-    console.log(`Attempting to delete storage file: ${storagePath}`);
-
     await bucket.file(storagePath).delete();
 
-    console.log(`Storage file deleted successfully: ${storagePath}`);
   } catch (error: unknown) {
     const errorCode =
       typeof error === "object" && error !== null && "code" in error

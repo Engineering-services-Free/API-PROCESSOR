@@ -28,9 +28,7 @@ export class BlogDao {
   public async findBlogs(
   options: FindBlogsOptions,
 ): Promise<PaginatedResult<Blog>> {
-  const { page, limit, filter = {} } = options;
-
-  console.log("MONGO FILTER:", filter);
+  const { page, limit, filter = {} } = options; 
 
   const skip = (page - 1) * limit;
 
@@ -47,10 +45,7 @@ export class BlogDao {
       .exec(),
 
     BlogModel.countDocuments(filter).exec(),
-  ]);
-
-  console.log("BLOG ITEMS:", items.length);
-  console.log("BLOG TOTAL:", total);
+  ]); 
 
   const totalPages = Math.ceil(total / limit);
 
