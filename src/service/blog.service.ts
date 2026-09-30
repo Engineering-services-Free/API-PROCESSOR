@@ -29,14 +29,28 @@ export class BlogService {
   public async getBlogs(query: unknown) {
     const validatedQuery = blogQuerySchema.parse(query);
 
+    const filter: {
+      status?: "draft" | "published" | "archived";
+      featured?: boolean;
+      projectId?: string;
+    } = {};
+
+    if (validatedQuery.status !== undefined) {
+      filter.status = validatedQuery.status;
+    }
+
+    if (validatedQuery.featured !== undefined) {
+      filter.featured = validatedQuery.featured;
+    }
+
+    if (validatedQuery.projectId !== undefined) {
+      filter.projectId = validatedQuery.projectId;
+    }
+
     return this.dao.findBlogs({
       page: validatedQuery.page,
       limit: validatedQuery.limit,
-      filter: {
-        status: validatedQuery.status,
-        featured: validatedQuery.featured,
-        projectId: validatedQuery.projectId,
-      },
+      filter,
     });
   }
 

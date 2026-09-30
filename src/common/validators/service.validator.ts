@@ -229,80 +229,48 @@ export const clientQuerySchema = paginationSchema.extend({
    BLOG
  */
 
+const blogImageSchema = z.object({
+  url: z.string().url(),
+  alt: z.string().min(1).max(200),
+  storagePath: z.string().optional(),
+});
+
 export const blogSchema = z.object({
-  title: z.string().min(1).max(200),
-  slug: z.string().min(1).max(200),
-
-  shortDescription: z.string().min(1).max(500),
-
-  overview: z.string().min(1),
-
-  coverImage: z.object({
-    url: z.string().url(),
-    alt: z.string().min(1),
-    storagePath: z.string().optional(),
-  }),
-
+  title: z.string().trim().min(1).max(200),
+  slug: z
+    .string()
+    .min(1)
+    .max(220)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Invalid slug"),
+  shortDescription: z.string().trim().min(1).max(500),
+  overview: z.string().trim().min(1).max(5000),
+  coverImage: blogImageSchema,
   content: z.string().min(1),
-
   projectId: z.string().regex(/^[0-9a-fA-F]{24}$/),
-
-  technologies: z.array(z.string().min(1)),
-  keyTakeaways: z.array(z.string().min(1)),
-
-  readingTime: z.number().int().positive(),
-
+  technologies: z.array(z.string().min(1)).max(30),
+  keyTakeaways: z.array(z.string().min(1)).max(10),
+  readingTime: z.number().int().min(1).max(120),
   status: z.enum(["draft", "published", "archived"]),
-
   featured: z.boolean(),
   order: z.number().int().nonnegative(),
-
   publishedAt: z.coerce.date().optional(),
-
   seo: z
     .object({
-      metaTitle: z.string().max(70).optional(),
-      metaDescription: z.string().max(160).optional(),
+      metaTitle: z.string().trim().max(60).optional(),
+      metaDescription: z.string().trim().max(160).optional(),
       keywords: z.array(z.string()),
     })
     .optional(),
 });
 
-export const updateBlogSchema = z.object({
-  title: blogSchema.shape.title.optional(),
-
-  slug: blogSchema.shape.slug.optional(),
-
-  shortDescription: blogSchema.shape.shortDescription.optional(),
-
-  overview: blogSchema.shape.overview.optional(),
-
-  coverImage: blogSchema.shape.coverImage.partial().optional(),
-
-  content: blogSchema.shape.content.optional(),
-
-  projectId: blogSchema.shape.projectId.optional(),
-
-  technologies: blogSchema.shape.technologies.optional(),
-
-  keyTakeaways: blogSchema.shape.keyTakeaways.optional(),
-
-  readingTime: blogSchema.shape.readingTime.optional(),
-
-  status: blogSchema.shape.status.optional(),
-
-  featured: blogSchema.shape.featured.optional(),
-
-  order: blogSchema.shape.order.optional(),
-
-  publishedAt: blogSchema.shape.publishedAt.optional(),
-
-  seo: blogSchema.shape.seo.unwrap().partial().optional(),
-});
+export const updateBlogSchema = blogSchema.partial();
 
 export const blogQuerySchema = paginationSchema.extend({
   status: z.enum(["draft", "published", "archived"]).optional(),
-  featured: z.coerce.boolean().optional(),
+  featured: z
+    .enum(["true", "false"])
+    .transform((value) => value === "true")
+    .optional(),
   projectId: z
     .string()
     .regex(/^[0-9a-fA-F]{24}$/)

@@ -26,41 +26,46 @@ export class BlogDao {
   }
 
   public async findBlogs(
-    options: FindBlogsOptions,
-  ): Promise<PaginatedResult<Blog>> {
-    const { page, limit, filter = {} } = options;
+  options: FindBlogsOptions,
+): Promise<PaginatedResult<Blog>> {
+  const { page, limit, filter = {} } = options;
 
-    const skip = (page - 1) * limit;
+  console.log("MONGO FILTER:", filter);
 
-    const [items, total] = await Promise.all([
-      BlogModel.find(filter)
-        .sort({
-          publishedAt: -1,
-          order: 1,
-          createdAt: -1,
-        })
-        .skip(skip)
-        .limit(limit)
-        .lean<Blog[]>()
-        .exec(),
+  const skip = (page - 1) * limit;
 
-      BlogModel.countDocuments(filter).exec(),
-    ]);
+  const [items, total] = await Promise.all([
+    BlogModel.find(filter)
+      .sort({
+        publishedAt: -1,
+        order: 1,
+        createdAt: -1,
+      })
+      .skip(skip)
+      .limit(limit)
+      .lean<Blog[]>()
+      .exec(),
 
-    const totalPages = Math.ceil(total / limit);
+    BlogModel.countDocuments(filter).exec(),
+  ]);
 
-    return {
-      items,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages,
-        hasNextPage: page < totalPages,
-        hasPreviousPage: page > 1,
-      },
-    };
-  }
+  console.log("BLOG ITEMS:", items.length);
+  console.log("BLOG TOTAL:", total);
+
+  const totalPages = Math.ceil(total / limit);
+
+  return {
+    items,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages,
+      hasNextPage: page < totalPages,
+      hasPreviousPage: page > 1,
+    },
+  };
+}
 
   public async findBlogById(id: string): Promise<Blog | null> {
     return BlogModel.findById(id).lean<Blog>().exec();
