@@ -55,14 +55,36 @@ export class FounderService {
       throw new ApplicationError("Founder not found", 404, "NOT_FOUND");
     }
 
+    const oldStoragePath = existingFounder.image?.storagePath;
+    const newStoragePath = validatedData.image?.storagePath;
+
+    const isNewImage =
+      Boolean(oldStoragePath) &&
+      Boolean(newStoragePath) &&
+      oldStoragePath !== newStoragePath;
+
+    // Update MongoDB first
     const updatedFounder = await this.dao.updateFounderById(id, validatedData);
 
-    if (
-      validatedData.image?.storagePath &&
-      existingFounder.image.storagePath &&
-      validatedData.image.storagePath !== existingFounder.image.storagePath
-    ) {
-      await deleteStorageFile(existingFounder.image.storagePath);
+    if (!updatedFounder) {
+      throw new ApplicationError(
+        "Failed to update Founder",
+        500,
+        "INTERNAL_SERVER_ERROR",
+      );
+    }
+
+    // Delete the previous image only after MongoDB succeeds
+    if (isNewImage && oldStoragePath) {
+      try {
+        await deleteStorageFile(oldStoragePath);
+      } catch (error) {
+        console.error(
+          "Failed to delete previous Founder image:",
+          oldStoragePath,
+          error,
+        );
+      }
     }
 
     return updatedFounder;
@@ -77,8 +99,24 @@ export class FounderService {
 
     const deletedFounder = await this.dao.deleteFounderById(id);
 
-    if (existingFounder.image.storagePath) {
-      await deleteStorageFile(existingFounder.image.storagePath);
+    if (!deletedFounder) {
+      throw new ApplicationError(
+        "Failed to delete Founder",
+        500,
+        "INTERNAL_SERVER_ERROR",
+      );
+    }
+
+    if (existingFounder.image?.storagePath) {
+      try {
+        await deleteStorageFile(existingFounder.image.storagePath);
+      } catch (error) {
+        console.error(
+          "Failed to delete Founder image:",
+          existingFounder.image.storagePath,
+          error,
+        );
+      }
     }
 
     return deletedFounder;

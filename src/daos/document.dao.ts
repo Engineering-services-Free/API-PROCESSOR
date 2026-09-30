@@ -1,4 +1,5 @@
-import { UpdateQuery } from "mongoose";
+import { Types } from "mongoose";
+
 import {
   PaginatedResult,
   PaginationQuery,
@@ -19,6 +20,8 @@ export interface FindDocumentsFilter {
     | "other";
 
   visibility?: "public" | "internal";
+
+  clientId?: string;
 }
 
 export interface FindDocumentsOptions extends PaginationQuery {
@@ -27,44 +30,63 @@ export interface FindDocumentsOptions extends PaginationQuery {
 
 export class DocumentDao {
   public async createDocument(data: CreateDocumentInput): Promise<Document> {
-    return DocumentModel.create(data);
+    const { clientId, ...documentData } = data;
+
+    return DocumentModel.create({
+      ...documentData,
+      ...(clientId ? { clientId: new Types.ObjectId(clientId) } : {}),
+    });
   }
 
-  public async findDocuments(
-    options: FindDocumentsOptions,
-  ): Promise<PaginatedResult<Document>> {
-    const { page, limit, filter = {} } = options;
+ public async findDocuments(
+  options: FindDocumentsOptions,
+): Promise<PaginatedResult<Document>> {
+  const { page, limit, filter = {} } = options;
 
-    const skip = (page - 1) * limit;
+  const skip = (page - 1) * limit;
 
-    const [items, total] = await Promise.all([
-      DocumentModel.find(filter)
-        .sort({
-          order: 1,
-          createdAt: -1,
-        })
-        .skip(skip)
-        .limit(limit)
-        .lean<Document[]>()
-        .exec(),
+  const mongoFilter: Record<string, unknown> = {};
 
-      DocumentModel.countDocuments(filter).exec(),
-    ]);
-
-    const totalPages = Math.ceil(total / limit);
-
-    return {
-      items,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages,
-        hasNextPage: page < totalPages,
-        hasPreviousPage: page > 1,
-      },
-    };
+  if (filter.type) {
+    mongoFilter.type = filter.type;
   }
+
+  if (filter.visibility) {
+    mongoFilter.visibility = filter.visibility;
+  }
+
+  if (filter.clientId) {
+    mongoFilter.clientId = new Types.ObjectId(filter.clientId);
+  }
+
+  const [items, total] = await Promise.all([
+    DocumentModel.find(mongoFilter)
+      .sort({
+        order: 1,
+        createdAt: -1,
+      })
+      .skip(skip)
+      .limit(limit)
+      .lean<Document[]>()
+      .exec(),
+
+    DocumentModel.countDocuments(mongoFilter).exec(),
+  ]);
+
+  const totalPages = Math.ceil(total / limit);
+
+  return {
+    items,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages,
+      hasNextPage: page < totalPages,
+      hasPreviousPage: page > 1,
+    },
+  };
+}
 
   public async findDocumentById(id: string): Promise<Document | null> {
     return DocumentModel.findById(id).lean<Document>().exec();
@@ -74,7 +96,17 @@ export class DocumentDao {
     id: string,
     data: UpdateDocumentInput,
   ): Promise<Document | null> {
-    return DocumentModel.findByIdAndUpdate(id, data, {
+    const { clientId, ...documentData } = data;
+    const update = {
+      ...documentData,
+      ...(clientId === undefined
+        ? {}
+        : {
+            clientId: clientId === null ? null : new Types.ObjectId(clientId),
+          }),
+    };
+
+    return DocumentModel.findByIdAndUpdate(id, update, {
       new: true,
       runValidators: true,
     })

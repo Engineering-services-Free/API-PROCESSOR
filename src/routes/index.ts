@@ -9,7 +9,8 @@ import aboutRoute from "../routes/about.route.js";
 import landingPageRoute from "../routes/landing-page.route.js";
 import contactRoute from "../routes/contact.route.js";
 import documentRoute from "../routes/document.route.js";
-import authRoute from "../routes/auth.route";
+import authRoute from "../routes/auth.route.js";
+import uploadRoute from "../routes/upload.route.js";
 
 const router = Router();
 
@@ -17,6 +18,9 @@ const apiPath = "/api/v1";
 
 // Authentication
 router.use(`${apiPath}/auth`, authRoute);
+
+// Uploads
+router.use(`${apiPath}/uploads`, uploadRoute);
 
 // Services
 router.use(`${apiPath}/services`, serviceRoute);

@@ -32,19 +32,10 @@ export class ContactService {
   public async getContact() {
     const contact = await this.dao.findContact();
 
-    if (!contact) {
-      throw new ApplicationError(
-        "Contact information not found",
-        404,
-        "NOT_FOUND",
-      );
-    }
-
-    return contact;
+    return contact ?? null;
   }
 
   public async updateContact(data: unknown) {
-    // Zod validation
     const validatedData = updateContactSchema.parse(data);
 
     const existingContact = await this.dao.findContact();
@@ -57,7 +48,17 @@ export class ContactService {
       );
     }
 
-    return this.dao.updateContact(validatedData);
+    const updatedContact = await this.dao.updateContact(validatedData);
+
+    if (!updatedContact) {
+      throw new ApplicationError(
+        "Failed to update contact information",
+        500,
+        "INTERNAL_SERVER_ERROR",
+      );
+    }
+
+    return updatedContact;
   }
 
   public async deleteContact() {

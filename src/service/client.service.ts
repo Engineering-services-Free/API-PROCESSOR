@@ -19,12 +19,16 @@ export class ClientService {
   public async getClients(query: unknown) {
     const validatedQuery = clientQuerySchema.parse(query);
 
+    const filter: { industry?: string } = {};
+
+    if (validatedQuery.industry !== undefined) {
+      filter.industry = validatedQuery.industry;
+    }
+
     return this.dao.findClients({
       page: validatedQuery.page,
       limit: validatedQuery.limit,
-      filter: {
-        industry: validatedQuery.industry,
-      },
+      filter,
     });
   }
 
@@ -47,18 +51,36 @@ export class ClientService {
       throw new ApplicationError("Client not found", 404, "NOT_FOUND");
     }
 
+    const oldStoragePath = existingClient.image?.storagePath;
+    const newStoragePath = validatedData.image?.storagePath;
+
+    const isNewImage =
+      Boolean(oldStoragePath) &&
+      Boolean(newStoragePath) &&
+      oldStoragePath !== newStoragePath;
+
+    // Update MongoDB first
     const updatedClient = await this.dao.updateClientById(id, validatedData);
 
-    /*
-     * Delete the old Firebase image only
-     * when a different image was provided.
-     */
-    if (
-      validatedData.image?.storagePath &&
-      existingClient.image.storagePath &&
-      validatedData.image.storagePath !== existingClient.image.storagePath
-    ) {
-      await deleteStorageFile(existingClient.image.storagePath);
+    if (!updatedClient) {
+      throw new ApplicationError(
+        "Failed to update Client",
+        500,
+        "INTERNAL_SERVER_ERROR",
+      );
+    }
+
+    // Delete old Firebase image only after DB update succeeds
+    if (isNewImage && oldStoragePath) {
+      try {
+        await deleteStorageFile(oldStoragePath);
+      } catch (error) {
+        console.error(
+          "Failed to delete previous Client image:",
+          oldStoragePath,
+          error,
+        );
+      }
     }
 
     return updatedClient;
@@ -73,12 +95,24 @@ export class ClientService {
 
     const deletedClient = await this.dao.deleteClientById(id);
 
-    /*
-     * Delete Firebase image after the
-     * MongoDB document has been deleted.
-     */
-    if (existingClient.image.storagePath) {
-      await deleteStorageFile(existingClient.image.storagePath);
+    if (!deletedClient) {
+      throw new ApplicationError(
+        "Failed to delete Client",
+        500,
+        "INTERNAL_SERVER_ERROR",
+      );
+    }
+
+    if (existingClient.image?.storagePath) {
+      try {
+        await deleteStorageFile(existingClient.image.storagePath);
+      } catch (error) {
+        console.error(
+          "Failed to delete Client image:",
+          existingClient.image.storagePath,
+          error,
+        );
+      }
     }
 
     return deletedClient;

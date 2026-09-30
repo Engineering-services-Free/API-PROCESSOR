@@ -31,13 +31,23 @@ export class ServiceService {
   public async getServices(query: unknown) {
     const validatedQuery = serviceQuerySchema.parse(query);
 
+    const filter: {
+      status?: "draft" | "published" | "archived";
+      featured?: boolean;
+    } = {};
+
+    if (validatedQuery.status !== undefined) {
+      filter.status = validatedQuery.status;
+    }
+
+    if (validatedQuery.featured !== undefined) {
+      filter.featured = validatedQuery.featured;
+    }
+
     return this.dao.findServices({
       page: validatedQuery.page,
       limit: validatedQuery.limit,
-      filter: {
-        status: validatedQuery.status,
-        featured: validatedQuery.featured,
-      },
+      filter,
     });
   }
 
@@ -82,20 +92,27 @@ export class ServiceService {
       }
     }
 
+    const oldStoragePath = existingService.heroImage?.storagePath;
+
+    const newStoragePath = validatedData.heroImage?.storagePath;
+
+    const isNewHeroImage =
+      Boolean(oldStoragePath) &&
+      Boolean(newStoragePath) &&
+      oldStoragePath !== newStoragePath;
+
     const updatedService = await this.dao.updateServiceById(id, validatedData);
 
-    /*
-     * Delete old Firebase image only when
-     * a new image with a different storagePath
-     * was actually provided.
-     */
-    if (
-      validatedData.heroImage?.storagePath &&
-      existingService.heroImage.storagePath &&
-      validatedData.heroImage.storagePath !==
-        existingService.heroImage.storagePath
-    ) {
-      await deleteStorageFile(existingService.heroImage.storagePath);
+    if (!updatedService) {
+      throw new ApplicationError(
+        "Failed to update service",
+        500,
+        "INTERNAL_SERVER_ERROR",
+      );
+    }
+
+    if (isNewHeroImage && oldStoragePath) {
+      await deleteStorageFile(oldStoragePath);
     }
 
     return updatedService;

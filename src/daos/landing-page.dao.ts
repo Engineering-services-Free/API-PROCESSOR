@@ -1,4 +1,3 @@
-import { UpdateQuery } from "mongoose";
 import { LandingPage } from "../persistance/typings";
 import { LandingPageModel } from "../persistance/model";
 import {

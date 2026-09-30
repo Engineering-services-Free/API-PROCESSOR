@@ -32,15 +32,10 @@ export class LandingPageService {
   public async getLandingPage() {
     const landingPage = await this.dao.findLandingPage();
 
-    if (!landingPage) {
-      throw new ApplicationError("Landing page not found", 404, "NOT_FOUND");
-    }
-
-    return landingPage;
+    return landingPage ?? null;
   }
 
   public async updateLandingPage(data: unknown) {
-    // Zod validation
     const validatedData = updateLandingPageSchema.parse(data);
 
     const existingLandingPage = await this.dao.findLandingPage();
@@ -49,7 +44,17 @@ export class LandingPageService {
       throw new ApplicationError("Landing page not found", 404, "NOT_FOUND");
     }
 
-    return this.dao.updateLandingPage(validatedData);
+    const updatedLandingPage = await this.dao.updateLandingPage(validatedData);
+
+    if (!updatedLandingPage) {
+      throw new ApplicationError(
+        "Failed to update landing page",
+        500,
+        "INTERNAL_SERVER_ERROR",
+      );
+    }
+
+    return updatedLandingPage;
   }
 
   public async deleteLandingPage() {

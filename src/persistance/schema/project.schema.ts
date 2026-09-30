@@ -102,11 +102,7 @@ export const projectSchema = new Schema<Project>(
       match: /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
     },
 
-    client: {
-      type: String,
-      trim: true,
-      maxlength: 200,
-    },
+    clientId: { type: Schema.Types.ObjectId, ref: "Client", required: true },
 
     industry: {
       type: String,
@@ -133,7 +129,7 @@ export const projectSchema = new Schema<Project>(
       type: String,
       required: true,
       trim: true,
-      maxlength: 5000,
+      maxlength: 20000,
     },
 
     heroImage: {
@@ -154,14 +150,14 @@ export const projectSchema = new Schema<Project>(
       type: String,
       required: true,
       trim: true,
-      maxlength: 5000,
+      maxlength: 20000,
     },
 
     solution: {
       type: String,
       required: true,
       trim: true,
-      maxlength: 5000,
+      maxlength: 20000,
     },
 
     engineeringScope: {

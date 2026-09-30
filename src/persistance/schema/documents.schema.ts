@@ -48,6 +48,12 @@ export const documentSchema = new Schema<Document>(
       maxlength: 500,
     },
 
+    clientId: {
+      type: Schema.Types.ObjectId,
+      ref: "Client",
+      index: true,
+    },
+
     file: {
       type: documentFileSchema,
       required: true,
@@ -73,6 +79,7 @@ export const documentSchema = new Schema<Document>(
 );
 
 documentSchema.index({
+  clientId: 1,
   type: 1,
   visibility: 1,
   order: 1,

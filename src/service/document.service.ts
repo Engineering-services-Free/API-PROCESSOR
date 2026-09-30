@@ -10,6 +10,25 @@ import { DocumentDao, documentDao } from "../daos/document.dao.js";
 export class DocumentService {
   constructor(private readonly dao: DocumentDao = documentDao) {}
 
+  /*
+   * Best-effort Firebase cleanup.
+   *
+   * MongoDB has already been updated when this runs.
+   * If Firebase deletion fails, log the error but don't
+   * turn a successful database update into a 500 response.
+   */
+  private async cleanupStorage(path: string): Promise<void> {
+    try {
+      await deleteStorageFile(path);
+    } catch (error) {
+      console.error(
+        "Failed to delete document file from Firebase Storage:",
+        path,
+        error,
+      );
+    }
+  }
+
   public async createDocument(data: unknown) {
     const validatedData = documentSchema.parse(data);
 
@@ -25,6 +44,7 @@ export class DocumentService {
       filter: {
         type: validatedQuery.type,
         visibility: validatedQuery.visibility,
+        clientId: validatedQuery.clientId,
       },
     });
   }
@@ -48,21 +68,43 @@ export class DocumentService {
       throw new ApplicationError("Document not found", 404, "NOT_FOUND");
     }
 
+    /*
+     * Keep the old Firebase path before updating MongoDB.
+     */
+    const oldStoragePath = existingDocument.file.storagePath;
+
+    const newStoragePath = validatedData.file?.storagePath;
+
+    const isNewFile =
+      Boolean(newStoragePath) &&
+      Boolean(oldStoragePath) &&
+      newStoragePath !== oldStoragePath;
+
+    /*
+     * Update MongoDB first.
+     */
     const updatedDocument = await this.dao.updateDocumentById(
       id,
       validatedData,
     );
 
+    if (!updatedDocument) {
+      throw new ApplicationError(
+        "Failed to update document",
+        500,
+        "INTERNAL_SERVER_ERROR",
+      );
+    }
+
     /*
-     * Delete the old Firebase file only
-     * when a different file was provided.
+     * Delete the old Firebase file only after
+     * MongoDB has been successfully updated.
+     *
+     * Cleanup is best-effort, so a Firebase deletion
+     * failure does not make the update fail.
      */
-    if (
-      validatedData.file?.storagePath &&
-      existingDocument.file.storagePath &&
-      validatedData.file.storagePath !== existingDocument.file.storagePath
-    ) {
-      await deleteStorageFile(existingDocument.file.storagePath);
+    if (isNewFile && oldStoragePath) {
+      await this.cleanupStorage(oldStoragePath);
     }
 
     return updatedDocument;
@@ -75,14 +117,16 @@ export class DocumentService {
       throw new ApplicationError("Document not found", 404, "NOT_FOUND");
     }
 
+    /*
+     * Delete MongoDB document first.
+     */
     const deletedDocument = await this.dao.deleteDocumentById(id);
 
     /*
-     * Delete Firebase file after MongoDB
-     * document deletion.
+     * Only clean up Firebase after MongoDB deletion.
      */
     if (existingDocument.file.storagePath) {
-      await deleteStorageFile(existingDocument.file.storagePath);
+      await this.cleanupStorage(existingDocument.file.storagePath);
     }
 
     return deletedDocument;

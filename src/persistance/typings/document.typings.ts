@@ -1,3 +1,5 @@
+import { Types } from "mongoose";
+
 export type DocumentType =
   | "brochure"
   | "certificate"
@@ -20,6 +22,8 @@ export interface Document {
   type: DocumentType;
 
   description?: string;
+
+  clientId?: Types.ObjectId;
 
   file: DocumentFile;
 

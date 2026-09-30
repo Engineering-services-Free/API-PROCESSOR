@@ -1,4 +1,3 @@
-import { UpdateQuery } from "mongoose";
 import { About } from "../persistance/typings";
 import { AboutModel } from "../persistance/model";
 import {

@@ -25,7 +25,7 @@ export interface Project {
 
   slug: string;
 
-  client?: string;
+  clientId: Types.ObjectId;
 
   industry: string;
 

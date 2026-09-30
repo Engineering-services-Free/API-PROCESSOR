@@ -126,56 +126,51 @@ export const serviceSlugSchema = z.object({
   slug: z.string().min(1),
 });
 
-/* 
-   PROJECT
- */
+// projects
+
+const projectImageSchema = z.object({
+  url: z.string().url(),
+  alt: z.string().min(1).max(200),
+  storagePath: z.string().optional(),
+});
 
 export const projectSchema = z.object({
-  title: z.string().min(1).max(200),
-  slug: z.string().min(1).max(200),
+  title: z.string().trim().min(1).max(200),
+  slug: z
+    .string()
+    .min(1)
+    .max(220)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Invalid slug"),
 
   clientId: z.string().regex(/^[0-9a-fA-F]{24}$/),
 
-  industry: z.string().min(1),
-  location: z.string().optional(),
+  industry: z.string().trim().min(1).max(150),
+  location: z.string().trim().max(200).optional(),
 
-  shortDescription: z.string().min(1).max(500),
-  overview: z.string().min(1),
+  shortDescription: z.string().trim().min(1).max(500),
+  overview: z.string().min(1).max(20000),
 
-  heroImage: z.object({
-    url: z.string().url(),
-    alt: z.string().min(1),
-    storagePath: z.string().optional(),
-  }),
+  heroImage: projectImageSchema,
+  gallery: z.array(projectImageSchema).max(30),
 
-  gallery: z.array(
-    z.object({
-      url: z.string().url(),
-      alt: z.string().min(1),
-      storagePath: z.string().optional(),
-    }),
-  ),
+  challenge: z.string().min(1).max(20000),
+  solution: z.string().min(1).max(20000),
 
-  challenge: z.string().min(1),
-  solution: z.string().min(1),
-
-  engineeringScope: z.array(z.string().min(1)),
-  technologies: z.array(z.string().min(1)),
+  engineeringScope: z.array(z.string().min(1)).max(30),
+  technologies: z.array(z.string().min(1)).max(30),
 
   results: z.array(
     z.object({
-      metric: z.string().min(1),
-      value: z.string().min(1),
-      description: z.string().optional(),
+      metric: z.string().trim().min(1).max(150),
+      value: z.string().trim().min(1).max(150),
+      description: z.string().trim().max(500).optional(),
     }),
   ),
 
-  duration: z.string().optional(),
+  duration: z.string().trim().max(100).optional(),
 
   year: z.number().int().min(1900).max(2100),
-
   status: z.enum(["draft", "published", "archived"]),
-
   featured: z.boolean(),
   order: z.number().int().nonnegative(),
 
@@ -183,65 +178,23 @@ export const projectSchema = z.object({
 
   seo: z
     .object({
-      metaTitle: z.string().max(70).optional(),
-      metaDescription: z.string().max(160).optional(),
+      metaTitle: z.string().trim().max(60).optional(),
+      metaDescription: z.string().trim().max(160).optional(),
       keywords: z.array(z.string()),
     })
     .optional(),
 });
 
-export const updateProjectSchema = z.object({
-  title: projectSchema.shape.title.optional(),
-
-  slug: projectSchema.shape.slug.optional(),
-
-  clientId: projectSchema.shape.clientId.optional(),
-
-  industry: projectSchema.shape.industry.optional(),
-
-  location: projectSchema.shape.location.optional(),
-
-  shortDescription: projectSchema.shape.shortDescription.optional(),
-
-  overview: projectSchema.shape.overview.optional(),
-
-  heroImage: projectSchema.shape.heroImage.partial().optional(),
-
-  gallery: z.array(projectSchema.shape.gallery.element.partial()).optional(),
-
-  challenge: projectSchema.shape.challenge.optional(),
-
-  solution: projectSchema.shape.solution.optional(),
-
-  engineeringScope: projectSchema.shape.engineeringScope.optional(),
-
-  technologies: projectSchema.shape.technologies.optional(),
-
-  results: projectSchema.shape.results.optional(),
-
-  duration: projectSchema.shape.duration.optional(),
-
-  year: projectSchema.shape.year.optional(),
-
-  status: projectSchema.shape.status.optional(),
-
-  featured: projectSchema.shape.featured.optional(),
-
-  order: projectSchema.shape.order.optional(),
-
-  relatedServices: projectSchema.shape.relatedServices.optional(),
-
-  seo: projectSchema.shape.seo.unwrap().partial().optional(),
-});
+export const updateProjectSchema = projectSchema.partial();
 
 export const projectQuerySchema = paginationSchema.extend({
   status: z.enum(["draft", "published", "archived"]).optional(),
-  featured: z.coerce.boolean().optional(),
+  // z.coerce.boolean() turns "false" into true, so parse the string
+  featured: z
+    .enum(["true", "false"])
+    .transform((value) => value === "true")
+    .optional(),
   industry: z.string().optional(),
-});
-
-export const projectSlugSchema = z.object({
-  slug: z.string().min(1),
 });
 
 /* 
@@ -396,12 +349,27 @@ export const updateFounderSchema = z.object({
    ABOUT
  */
 
+export const aboutImageSchema = z.object({
+  url: z.string().url(),
+  alt: z.string().min(1).max(200),
+  storagePath: z.string().optional(),
+});
+
 export const aboutSchema = z.object({
+  heroImage: aboutImageSchema,
+
   overview: z.string().min(1),
+
   aboutUs: z.string().min(1),
 });
 
-export const updateAboutSchema = aboutSchema.partial();
+export const updateAboutSchema = z.object({
+  heroImage: aboutImageSchema.partial().optional(),
+
+  overview: aboutSchema.shape.overview.optional(),
+
+  aboutUs: aboutSchema.shape.aboutUs.optional(),
+});
 
 /* 
    LANDING PAGE
@@ -410,7 +378,7 @@ export const updateAboutSchema = aboutSchema.partial();
 export const landingPageSchema = z.object({
   hero: z.object({
     title: z.string().min(1).max(200),
-    description: z.string().optional(),
+    description: z.string().trim().max(500).optional().or(z.literal("")),
   }),
 
   whatWeDo: z.string().min(1),
@@ -422,24 +390,45 @@ export const updateLandingPageSchema = landingPageSchema.partial();
    CONTACT
  */
 
+const phoneSchema = z
+  .string()
+  .regex(/^\d{10}$/, "Phone number must be exactly 10 digits");
+
+const httpsUrlSchema = z
+  .string()
+  .url("Enter a valid URL")
+  .refine(
+    (value) => value.startsWith("https://"),
+    "URL must start with https://",
+  );
+
 export const contactSchema = z.object({
-  contactNumber1: z.string().min(5).max(30),
+  contactNumber1: phoneSchema,
 
-  contactNumber2: z.string().min(5).max(30).optional(),
+  // "" is allowed so an admin can clear the second number
+  contactNumber2: phoneSchema.optional().or(z.literal("")),
 
-  whatsappNumber: z.string().min(5).max(30),
+  whatsappNumber: phoneSchema,
 
-  email: z.string().email(),
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .max(254)
+    .regex(
+      /^[a-z0-9._%+-]+@[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}$/,
+      "Enter a valid email address",
+    ),
 
   socialMedia: z.array(
     z.object({
-      platform: z.string().min(1),
-      url: z.string().url(),
+      platform: z.string().trim().min(1, "Platform is required").max(50),
+      url: httpsUrlSchema,
     }),
   ),
 
   location: z.object({
-    mapUrl: z.string().url(),
+    mapUrl: httpsUrlSchema,
   }),
 });
 
@@ -448,6 +437,10 @@ export const updateContactSchema = contactSchema.partial();
 /* 
    DOCUMENT
  */
+
+const clientIdSchema = z
+  .string()
+  .regex(/^[0-9a-fA-F]{24}$/, "Invalid client id");
 
 export const documentSchema = z.object({
   title: z.string().min(1).max(200),
@@ -460,7 +453,9 @@ export const documentSchema = z.object({
     "other",
   ]),
 
-  description: z.string().optional(),
+  description: z.string().max(500).optional(),
+
+  clientId: clientIdSchema.optional(),
 
   file: z.object({
     url: z.string().url(),
@@ -478,6 +473,8 @@ export const updateDocumentSchema = z.object({
   type: documentSchema.shape.type.optional(),
 
   description: documentSchema.shape.description.optional(),
+
+  clientId: clientIdSchema.nullable().optional(),
 
   file: documentSchema.shape.file.partial().optional(),
 
@@ -497,9 +494,10 @@ export const documentQuerySchema = paginationSchema.extend({
     ])
     .optional(),
 
+  clientId: clientIdSchema.optional(),
+
   visibility: z.enum(["public", "internal"]).optional(),
 });
-
 /* 
    INFERRED TYPES
  */

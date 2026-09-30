@@ -7,8 +7,8 @@ export interface FounderImage {
 export interface Founder {
   name: string;
   image: FounderImage;
-  overview: string;
-  experience: string;
+  overview: string; //text area
+  experience: string; //Html content
   order: number;
   createdAt: Date;
   updatedAt: Date;

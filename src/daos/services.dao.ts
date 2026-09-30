@@ -38,16 +38,21 @@ export class ServiceDao {
         })
         .skip(skip)
         .limit(limit)
-        .lean<Service[]>()
+        .lean()
         .exec(),
 
       ServiceModel.countDocuments(filter).exec(),
     ]);
 
+    const services: Service[] = items.map((item) => ({
+      ...item,
+      id: item._id.toString(),
+    }));
+
     const totalPages = Math.ceil(total / limit);
 
     return {
-      items,
+      items: services,
       pagination: {
         page,
         limit,

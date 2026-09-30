@@ -1,8 +1,5 @@
 import { ApplicationError } from "../common/errors/application.error.js";
-import {
-  deleteStorageFile,
-  deleteStorageFiles,
-} from "../common/storage/storage.js";
+import { deleteStorageFiles } from "../common/storage/storage.js";
 import {
   projectSchema,
   updateProjectSchema,
@@ -12,6 +9,25 @@ import { ProjectDao, projectDao } from "../daos/project.dao.js";
 
 export class ProjectService {
   constructor(private readonly dao: ProjectDao = projectDao) {}
+
+  /*
+   * Best-effort Firebase cleanup.
+   *
+   * The database is already updated when this runs, so a failed
+   * storage delete is logged instead of turning a successful
+   * save into a 500 error.
+   */
+  private async cleanupStorage(paths: string[]): Promise<void> {
+    if (paths.length === 0) {
+      return;
+    }
+
+    try {
+      await deleteStorageFiles(paths);
+    } catch (error) {
+      console.error("Failed to delete some project images:", paths, error);
+    }
+  }
 
   public async createProject(data: unknown) {
     const validatedData = projectSchema.parse(data);
@@ -34,14 +50,32 @@ export class ProjectService {
   public async getProjects(query: unknown) {
     const validatedQuery = projectQuerySchema.parse(query);
 
+    /*
+     * Only add keys that are defined. Passing `{ industry: undefined }`
+     * makes Mongo match documents where the field is null/missing.
+     */
+    const filter: {
+      status?: "draft" | "published" | "archived";
+      featured?: boolean;
+      industry?: string;
+    } = {};
+
+    if (validatedQuery.status !== undefined) {
+      filter.status = validatedQuery.status;
+    }
+
+    if (validatedQuery.featured !== undefined) {
+      filter.featured = validatedQuery.featured;
+    }
+
+    if (validatedQuery.industry !== undefined) {
+      filter.industry = validatedQuery.industry;
+    }
+
     return this.dao.findProjects({
       page: validatedQuery.page,
       limit: validatedQuery.limit,
-      filter: {
-        status: validatedQuery.status,
-        featured: validatedQuery.featured,
-        industry: validatedQuery.industry,
-      },
+      filter,
     });
   }
 
@@ -87,8 +121,8 @@ export class ProjectService {
     }
 
     /*
-     * Find Firebase files that need to be
-     * deleted BEFORE changing the database.
+     * Find Firebase files that need to be deleted
+     * BEFORE changing the database.
      */
     const storagePathsToDelete: string[] = [];
 
@@ -107,8 +141,7 @@ export class ProjectService {
     /*
      * 2. Gallery image removal/replacement
      *
-     * Compare existing gallery paths against
-     * the new gallery paths.
+     * Compare existing gallery paths against the new gallery paths.
      */
     if (validatedData.gallery) {
       const newGalleryPaths = new Set(
@@ -127,13 +160,19 @@ export class ProjectService {
 
     const updatedProject = await this.dao.updateProjectById(id, validatedData);
 
+    if (!updatedProject) {
+      throw new ApplicationError(
+        "Failed to update project",
+        500,
+        "INTERNAL_SERVER_ERROR",
+      );
+    }
+
     /*
-     * Delete old Firebase files only after
+     * Delete old Firebase files only after the
      * MongoDB update succeeds.
      */
-    if (storagePathsToDelete.length > 0) {
-      await deleteStorageFiles(storagePathsToDelete);
-    }
+    await this.cleanupStorage(storagePathsToDelete);
 
     return updatedProject;
   }
@@ -163,12 +202,9 @@ export class ProjectService {
     );
 
     /*
-     * Delete all Firebase files after
-     * MongoDB deletion.
+     * Delete all Firebase files after MongoDB deletion.
      */
-    if (storagePaths.length > 0) {
-      await deleteStorageFiles(storagePaths);
-    }
+    await this.cleanupStorage(storagePaths);
 
     return deletedProject;
   }
