@@ -269,3 +269,9 @@ serviceSchema.index({
   createdAt: -1,
   _id: -1,
 });
+
+serviceSchema.index({
+  status: 1,
+  createdAt: -1,
+  _id: -1,
+});

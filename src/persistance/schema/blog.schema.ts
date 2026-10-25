@@ -212,3 +212,9 @@ blogSchema.index({
   createdAt: -1,
   _id: -1,
 });
+
+blogSchema.index({
+  status: 1,
+  createdAt: -1,
+  _id: -1,
+});

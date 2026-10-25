@@ -12,6 +12,8 @@ import documentRoute from "../routes/document.route.js";
 import authRoute from "../routes/auth.route.js";
 import uploadRoute from "../routes/upload.route.js";
 import adminRoute from "../routes/admin.route.js";
+import websiteRoute from "../routes/website.route.js";
+import landingPageDashboardRoute from "../routes/landing-page-dashboard.route.js";
 
 const router = Router();
 
@@ -22,6 +24,10 @@ router.use(`${apiPath}/auth`, authRoute);
 
 // Admin dashboard
 router.use(`${apiPath}/admin`, adminRoute);
+
+// Public website data
+router.use(`${apiPath}/website/dashboard`, landingPageDashboardRoute);
+router.use(`${apiPath}/website`, websiteRoute);
 
 // Uploads
 router.use(`${apiPath}/uploads`, uploadRoute);

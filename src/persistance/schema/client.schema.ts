@@ -56,3 +56,4 @@ export const clientSchema = new Schema<Client>(
 
 clientSchema.index({ industry: 1 });
 clientSchema.index({ createdAt: -1, _id: -1 });
+clientSchema.index({ name: 1, createdAt: -1 });
