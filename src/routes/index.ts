@@ -11,6 +11,7 @@ import contactRoute from "../routes/contact.route.js";
 import documentRoute from "../routes/document.route.js";
 import authRoute from "../routes/auth.route.js";
 import uploadRoute from "../routes/upload.route.js";
+import adminRoute from "../routes/admin.route.js";
 
 const router = Router();
 
@@ -18,6 +19,9 @@ const apiPath = "/api/v1";
 
 // Authentication
 router.use(`${apiPath}/auth`, authRoute);
+
+// Admin dashboard
+router.use(`${apiPath}/admin`, adminRoute);
 
 // Uploads
 router.use(`${apiPath}/uploads`, uploadRoute);

@@ -246,3 +246,8 @@ projectSchema.index({
   status: 1,
   year: -1,
 });
+
+projectSchema.index({
+  createdAt: -1,
+  _id: -1,
+});

@@ -1,4 +1,5 @@
 import type { ErrorRequestHandler } from "express";
+import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 
 import { ApplicationError } from "./application.error.js";
@@ -6,6 +7,34 @@ import type { ErrorDetail, ErrorResponse } from "./error.types.js";
 
 export const errorHandler: ErrorRequestHandler = (error, _req, res, _next) => {
   console.error("Application error:", error);
+
+  if (error instanceof jwt.TokenExpiredError) {
+    const response: ErrorResponse = {
+      success: false,
+      error: {
+        code: "UNAUTHORIZED",
+        message: "Authentication token has expired",
+      },
+    };
+
+    res.status(401).json(response);
+
+    return;
+  }
+
+  if (error instanceof jwt.JsonWebTokenError) {
+    const response: ErrorResponse = {
+      success: false,
+      error: {
+        code: "UNAUTHORIZED",
+        message: "Invalid authentication token",
+      },
+    };
+
+    res.status(401).json(response);
+
+    return;
+  }
 
   // Application Error
 

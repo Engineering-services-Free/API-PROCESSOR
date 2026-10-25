@@ -31,7 +31,11 @@ export const authenticate = (
 
     const [scheme, token] = authorization.split(" ");
 
-    if (scheme !== "Bearer" || !token) {
+    if (
+      scheme !== "Bearer" ||
+      !token ||
+      authorization.split(" ").length !== 2
+    ) {
       throw new ApplicationError(
         "Invalid authorization format",
         401,
@@ -56,7 +60,9 @@ export const authenticate = (
       decoded === null ||
       typeof decoded.sub !== "string" ||
       typeof decoded.email !== "string" ||
-      typeof decoded.role !== "string"
+      typeof decoded.role !== "string" ||
+      typeof decoded.exp !== "number" ||
+      !Number.isFinite(decoded.exp)
     ) {
       throw new ApplicationError(
         "Invalid authentication token",

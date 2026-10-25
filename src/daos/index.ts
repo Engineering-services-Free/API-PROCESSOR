@@ -7,4 +7,5 @@ export * from "./document.dao";
 export * from "./founder.dao";
 export * from "./landing-page.dao";
 export * from "./project.dao";
+export * from "./dashboard.dao";
 export * from "./services.dao";

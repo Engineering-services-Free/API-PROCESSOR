@@ -207,3 +207,8 @@ blogSchema.index({
   featured: 1,
   order: 1,
 });
+
+blogSchema.index({
+  createdAt: -1,
+  _id: -1,
+});
