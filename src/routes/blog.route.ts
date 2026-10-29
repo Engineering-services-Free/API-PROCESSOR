@@ -36,7 +36,13 @@ const deleteBlogHandler: RequestHandler<BlogIdParams> = (req, res, next) => {
   blogController.deleteBlog(req, res, next);
 };
 
+const reorderBlogHandler: RequestHandler<BlogIdParams> = (req, res, next) => {
+  blogController.reorderBlog(req, res, next);
+};
+
 router.patch("/:id", authenticate, authorize("admin"), updateBlogHandler);
+
+router.patch("/:id/order", authenticate, authorize("admin"), reorderBlogHandler);
 
 router.delete("/:id", authenticate, authorize("admin"), deleteBlogHandler);
 

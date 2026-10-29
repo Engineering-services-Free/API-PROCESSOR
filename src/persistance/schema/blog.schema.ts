@@ -1,18 +1,19 @@
 import { Schema } from "mongoose";
 
 import type { Blog, BlogImage, BlogSeo } from "../typings/blog.typings";
+import { isPersistenceFieldRequired } from "../required-fields.js";
 
 const blogImageSchema = new Schema<BlogImage>(
   {
     url: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("blog", "coverImage.url"),
       trim: true,
     },
 
     alt: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("blog", "coverImage.alt"),
       trim: true,
       maxlength: 200,
     },
@@ -55,7 +56,7 @@ export const blogSchema = new Schema<Blog>(
   {
     title: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("blog", "title"),
       trim: true,
       maxlength: 200,
     },
@@ -71,7 +72,7 @@ export const blogSchema = new Schema<Blog>(
      */
     slug: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("blog", "slug"),
       unique: true,
       lowercase: true,
       trim: true,
@@ -81,21 +82,21 @@ export const blogSchema = new Schema<Blog>(
 
     shortDescription: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("blog", "shortDescription"),
       trim: true,
       maxlength: 500,
     },
 
     overview: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("blog", "overview"),
       trim: true,
       maxlength: 5000,
     },
 
     coverImage: {
       type: blogImageSchema,
-      required: true,
+      required: isPersistenceFieldRequired("blog", "coverImage"),
     },
 
     /**
@@ -107,7 +108,7 @@ export const blogSchema = new Schema<Blog>(
      */
     content: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("blog", "content"),
     },
 
     /**
@@ -116,7 +117,7 @@ export const blogSchema = new Schema<Blog>(
     projectId: {
       type: Schema.Types.ObjectId,
       ref: "Project",
-      required: true,
+      required: isPersistenceFieldRequired("blog", "projectId"),
     },
 
     technologies: {
@@ -139,7 +140,7 @@ export const blogSchema = new Schema<Blog>(
 
     readingTime: {
       type: Number,
-      required: true,
+      required: isPersistenceFieldRequired("blog", "readingTime"),
       min: 1,
       max: 120,
     },

@@ -9,6 +9,12 @@ import {
   CreateBlogInput,
   UpdateBlogInput,
 } from "../common/validators/service.validator";
+import {
+  createOrderedRecord,
+  deleteOrderedRecord,
+  moveOrderedRecord,
+  updateOrderedRecord,
+} from "../common/ordering/order-sequence.service.js";
 
 export interface FindBlogsFilter {
   status?: "draft" | "published" | "archived";
@@ -22,7 +28,14 @@ export interface FindBlogsOptions extends PaginationQuery {
 
 export class BlogDao {
   public async createBlog(data: CreateBlogInput): Promise<Blog> {
-    return BlogModel.create(data);
+    return createOrderedRecord(
+      "blogs",
+      BlogModel,
+      data,
+      "projectId",
+      data.projectId,
+      { publishedAt: -1, createdAt: -1 },
+    );
   }
 
   public async findBlogs(
@@ -74,16 +87,38 @@ export class BlogDao {
     id: string,
     data: UpdateBlogInput,
   ): Promise<Blog | null> {
-    return BlogModel.findByIdAndUpdate(id, data, {
-      new: true,
-      runValidators: true,
-    })
-      .lean<Blog>()
-      .exec();
+    return updateOrderedRecord(
+      "blogs",
+      BlogModel,
+      id,
+      data,
+      "projectId",
+      { publishedAt: -1, createdAt: -1 },
+    );
   }
 
   public async deleteBlogById(id: string): Promise<Blog | null> {
-    return BlogModel.findByIdAndDelete(id).lean<Blog>().exec();
+    return deleteOrderedRecord(
+      "blogs",
+      BlogModel,
+      id,
+      "projectId",
+      { publishedAt: -1, createdAt: -1 },
+    );
+  }
+
+  public async reorderBlogById(
+    id: string,
+    order: number,
+  ): Promise<Blog | null> {
+    return moveOrderedRecord(
+      "blogs",
+      BlogModel,
+      id,
+      order,
+      "projectId",
+      { publishedAt: -1, createdAt: -1 },
+    );
   }
 }
 

@@ -16,7 +16,7 @@ export class AboutDao {
 
   public async updateAbout(data: UpdateAboutInput): Promise<About | null> {
     return AboutModel.findOneAndUpdate({}, data, {
-      new: true,
+      returnDocument: "after",
       runValidators: true,
     })
       .lean<About>()

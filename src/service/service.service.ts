@@ -6,12 +6,21 @@ import {
   serviceQuerySchema,
 } from "../common/validators/service.validator.js";
 import { ServiceDao, serviceDao } from "../daos/services.dao.js";
+import { normalizeNumberedSequence } from "../common/ordering/order-sequence.service.js";
 
 export class ServiceService {
   constructor(private readonly dao: ServiceDao = serviceDao) {}
 
   public async createService(data: unknown) {
     const validatedData = serviceSchema.parse(data);
+    const dataWithSequencedProcess = {
+      ...validatedData,
+      process: normalizeNumberedSequence(
+        validatedData.process,
+        (step) => step.step,
+        (step, position) => ({ ...step, step: position }),
+      ),
+    };
 
     const existingService = await this.dao.findServiceBySlug(
       validatedData.slug,
@@ -25,7 +34,7 @@ export class ServiceService {
       );
     }
 
-    return this.dao.createService(validatedData);
+    return this.dao.createService(dataWithSequencedProcess);
   }
 
   public async getServices(query: unknown) {
@@ -73,6 +82,17 @@ export class ServiceService {
 
   public async updateService(id: string, data: unknown) {
     const validatedData = updateServiceSchema.parse(data);
+    const dataWithSequencedProcess =
+      validatedData.process === undefined
+        ? validatedData
+        : {
+            ...validatedData,
+            process: normalizeNumberedSequence(
+              validatedData.process,
+              (step) => step.step,
+              (step, position) => ({ ...step, step: position }),
+            ),
+          };
 
     const existingService = await this.dao.findServiceById(id);
 
@@ -101,7 +121,10 @@ export class ServiceService {
       Boolean(newStoragePath) &&
       oldStoragePath !== newStoragePath;
 
-    const updatedService = await this.dao.updateServiceById(id, validatedData);
+    const updatedService = await this.dao.updateServiceById(
+      id,
+      dataWithSequencedProcess,
+    );
 
     if (!updatedService) {
       throw new ApplicationError(
@@ -127,6 +150,14 @@ export class ServiceService {
 
     const deletedService = await this.dao.deleteServiceById(id);
 
+    if (!deletedService) {
+      throw new ApplicationError(
+        "Failed to delete service",
+        500,
+        "INTERNAL_SERVER_ERROR",
+      );
+    }
+
     /*
      * Delete Firebase image after the
      * MongoDB document has been deleted.
@@ -136,6 +167,16 @@ export class ServiceService {
     }
 
     return deletedService;
+  }
+
+  public async reorderService(id: string, order: number) {
+    const service = await this.dao.reorderServiceById(id, order);
+
+    if (!service) {
+      throw new ApplicationError("Service not found", 404, "NOT_FOUND");
+    }
+
+    return service;
   }
 }
 

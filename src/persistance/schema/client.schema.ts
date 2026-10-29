@@ -1,18 +1,19 @@
 import { Schema } from "mongoose";
 
 import type { Client, ClientImage } from "../typings/client.typings";
+import { isPersistenceFieldRequired } from "../required-fields.js";
 
 const clientImageSchema = new Schema<ClientImage>(
   {
     url: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("client", "image.url"),
       trim: true,
     },
 
     alt: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("client", "image.alt"),
       trim: true,
       maxlength: 200,
     },
@@ -31,19 +32,19 @@ export const clientSchema = new Schema<Client>(
   {
     name: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("client", "name"),
       trim: true,
       maxlength: 200,
     },
 
     image: {
       type: clientImageSchema,
-      required: true,
+      required: isPersistenceFieldRequired("client", "image"),
     },
 
     industry: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("client", "industry"),
       trim: true,
       maxlength: 150,
     },

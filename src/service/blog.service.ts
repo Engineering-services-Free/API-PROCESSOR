@@ -122,6 +122,14 @@ export class BlogService {
 
     const deletedBlog = await this.dao.deleteBlogById(id);
 
+    if (!deletedBlog) {
+      throw new ApplicationError(
+        "Failed to delete blog",
+        500,
+        "INTERNAL_SERVER_ERROR",
+      );
+    }
+
     /*
      * Delete Firebase cover image after
      * MongoDB document deletion.
@@ -131,6 +139,16 @@ export class BlogService {
     }
 
     return deletedBlog;
+  }
+
+  public async reorderBlog(id: string, order: number) {
+    const blog = await this.dao.reorderBlogById(id, order);
+
+    if (!blog) {
+      throw new ApplicationError("Blog not found", 404, "NOT_FOUND");
+    }
+
+    return blog;
   }
 }
 

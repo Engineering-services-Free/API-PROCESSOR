@@ -4,10 +4,23 @@ import type {
   UpdateFounderInput,
 } from "../common/validators/service.validator.js";
 import type { Founder } from "../persistance/typings/index.js";
+import {
+  createOrderedRecord,
+  deleteOrderedRecord,
+  moveOrderedRecord,
+  updateOrderedRecord,
+} from "../common/ordering/order-sequence.service.js";
 
 export class FounderDao {
   public async createFounder(data: CreateFounderInput): Promise<Founder> {
-    return FounderModel.create(data);
+    return createOrderedRecord(
+      "founders",
+      FounderModel,
+      data,
+      undefined,
+      undefined,
+      {},
+    );
   }
 
   public async findFounders(): Promise<Founder[]> {
@@ -22,16 +35,38 @@ export class FounderDao {
     id: string,
     data: UpdateFounderInput,
   ): Promise<Founder | null> {
-    return FounderModel.findByIdAndUpdate(id, data, {
-      new: true,
-      runValidators: true,
-    })
-      .lean<Founder>()
-      .exec();
+    return updateOrderedRecord(
+      "founders",
+      FounderModel,
+      id,
+      data,
+      undefined,
+      {},
+    );
   }
 
   public async deleteFounderById(id: string): Promise<Founder | null> {
-    return FounderModel.findByIdAndDelete(id).lean<Founder>().exec();
+    return deleteOrderedRecord(
+      "founders",
+      FounderModel,
+      id,
+      undefined,
+      {},
+    );
+  }
+
+  public async reorderFounderById(
+    id: string,
+    order: number,
+  ): Promise<Founder | null> {
+    return moveOrderedRecord(
+      "founders",
+      FounderModel,
+      id,
+      order,
+      undefined,
+      {},
+    );
   }
 }
 

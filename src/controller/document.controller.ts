@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import { documentService } from "../service/index";
+import { validateOrderMove } from "../common/ordering/order-sequence.service.js";
 
 interface DocumentIdParams {
   id: string;
@@ -94,6 +95,27 @@ export class DocumentController {
       next(error);
     }
   }
+
+  public async reorderDocument(
+      req: Request<DocumentIdParams>,
+      res: Response,
+      next: NextFunction,
+    ): Promise<void> {
+      try {
+        const { order } = validateOrderMove({
+          id: req.params.id,
+          order: req.body?.order,
+        });
+        const document = await documentService.reorderDocument(
+          req.params.id,
+          order,
+        );
+
+        res.status(200).json({ success: true, data: document });
+      } catch (error) {
+        next(error);
+      }
+    }
 }
 
 export const documentController = new DocumentController();

@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import { founderService } from "../service/index";
+import { validateOrderMove } from "../common/ordering/order-sequence.service.js";
 
 interface FounderIdParams {
   id: string;
@@ -93,6 +94,24 @@ export class FounderController {
       next(error);
     }
   }
+
+  public async reorderFounder(
+      req: Request<FounderIdParams>,
+      res: Response,
+      next: NextFunction,
+    ): Promise<void> {
+      try {
+        const { order } = validateOrderMove({
+          id: req.params.id,
+          order: req.body?.order,
+        });
+        const founder = await founderService.reorderFounder(req.params.id, order);
+
+        res.status(200).json({ success: true, data: founder });
+      } catch (error) {
+        next(error);
+      }
+    }
 }
 
 export const founderController = new FounderController();

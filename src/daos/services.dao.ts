@@ -8,6 +8,12 @@ import {
   CreateServiceInput,
   UpdateServiceInput,
 } from "../common/validators/service.validator";
+import {
+  createOrderedRecord,
+  deleteOrderedRecord,
+  moveOrderedRecord,
+  updateOrderedRecord,
+} from "../common/ordering/order-sequence.service.js";
 
 export interface FindServicesFilter {
   status?: "draft" | "published" | "archived";
@@ -20,7 +26,14 @@ export interface FindServicesOptions extends PaginationQuery {
 
 export class ServiceDao {
   public async createService(data: CreateServiceInput): Promise<Service> {
-    return ServiceModel.create(data);
+    return createOrderedRecord(
+      "services",
+      ServiceModel,
+      data,
+      undefined,
+      undefined,
+      { createdAt: -1 },
+    );
   }
 
   public async findServices(
@@ -76,16 +89,38 @@ export class ServiceDao {
     id: string,
     data: UpdateServiceInput,
   ): Promise<Service | null> {
-    return ServiceModel.findByIdAndUpdate(id, data, {
-      new: true,
-      runValidators: true,
-    })
-      .lean<Service>()
-      .exec();
+    return updateOrderedRecord(
+      "services",
+      ServiceModel,
+      id,
+      data,
+      undefined,
+      { createdAt: -1 },
+    );
   }
 
   public async deleteServiceById(id: string): Promise<Service | null> {
-    return ServiceModel.findByIdAndDelete(id).lean<Service>().exec();
+    return deleteOrderedRecord(
+      "services",
+      ServiceModel,
+      id,
+      undefined,
+      { createdAt: -1 },
+    );
+  }
+
+  public async reorderServiceById(
+    id: string,
+    order: number,
+  ): Promise<Service | null> {
+    return moveOrderedRecord(
+      "services",
+      ServiceModel,
+      id,
+      order,
+      undefined,
+      { createdAt: -1 },
+    );
   }
 }
 

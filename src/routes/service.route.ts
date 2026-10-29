@@ -46,7 +46,17 @@ const deleteServiceHandler: RequestHandler<ServiceIdParams> = (
   serviceController.deleteService(req, res, next);
 };
 
+const reorderServiceHandler: RequestHandler<ServiceIdParams> = (
+  req,
+  res,
+  next,
+) => {
+  serviceController.reorderService(req, res, next);
+};
+
 router.patch("/:id", authenticate, authorize("admin"), updateServiceHandler);
+
+router.patch("/:id/order", authenticate, authorize("admin"), reorderServiceHandler);
 
 router.delete("/:id", authenticate, authorize("admin"), deleteServiceHandler);
 

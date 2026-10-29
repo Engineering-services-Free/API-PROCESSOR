@@ -83,10 +83,7 @@ export class DocumentService {
     /*
      * Update MongoDB first.
      */
-    const updatedDocument = await this.dao.updateDocumentById(
-      id,
-      validatedData,
-    );
+    const updatedDocument = await this.dao.updateDocumentById(id, validatedData);
 
     if (!updatedDocument) {
       throw new ApplicationError(
@@ -122,6 +119,14 @@ export class DocumentService {
      */
     const deletedDocument = await this.dao.deleteDocumentById(id);
 
+    if (!deletedDocument) {
+      throw new ApplicationError(
+        "Failed to delete document",
+        500,
+        "INTERNAL_SERVER_ERROR",
+      );
+    }
+
     /*
      * Only clean up Firebase after MongoDB deletion.
      */
@@ -130,6 +135,16 @@ export class DocumentService {
     }
 
     return deletedDocument;
+  }
+
+  public async reorderDocument(id: string, order: number) {
+    const document = await this.dao.reorderDocumentById(id, order);
+
+    if (!document) {
+      throw new ApplicationError("Document not found", 404, "NOT_FOUND");
+    }
+
+    return document;
   }
 }
 

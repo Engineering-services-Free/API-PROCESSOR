@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import { projectService } from "../service/index";
+import { validateOrderMove } from "../common/ordering/order-sequence.service.js";
 
 interface ProjectIdParams {
   id: string;
@@ -115,6 +116,24 @@ export class ProjectController {
       next(error);
     }
   }
+
+  public async reorderProject(
+      req: Request<ProjectIdParams>,
+      res: Response,
+      next: NextFunction,
+    ): Promise<void> {
+      try {
+        const { order } = validateOrderMove({
+          id: req.params.id,
+          order: req.body?.order,
+        });
+        const project = await projectService.reorderProject(req.params.id, order);
+
+        res.status(200).json({ success: true, data: project });
+      } catch (error) {
+        next(error);
+      }
+    }
 }
 
 export const projectController = new ProjectController();

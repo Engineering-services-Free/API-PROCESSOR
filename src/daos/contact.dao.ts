@@ -21,7 +21,7 @@ export class ContactDao {
     {},
     data,
     {
-      new: true,
+      returnDocument: "after",
       runValidators: true,
     },
   )

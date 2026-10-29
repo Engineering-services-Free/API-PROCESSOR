@@ -1,12 +1,13 @@
 import { Schema } from "mongoose";
 
 import type { LandingHero, LandingPage } from "../typings/landing-page.typings";
+import { isPersistenceFieldRequired } from "../required-fields.js";
 
 const landingHeroSchema = new Schema<LandingHero>(
   {
     title: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("landingPage", "hero.title"),
       trim: true,
       maxlength: 200,
     },
@@ -26,12 +27,12 @@ export const landingPageSchema = new Schema<LandingPage>(
   {
     hero: {
       type: landingHeroSchema,
-      required: true,
+      required: isPersistenceFieldRequired("landingPage", "hero"),
     },
 
     whatWeDo: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("landingPage", "whatWeDo"),
     },
   },
   {

@@ -46,7 +46,17 @@ const deleteProjectHandler: RequestHandler<ProjectIdParams> = (
   projectController.deleteProject(req, res, next);
 };
 
+const reorderProjectHandler: RequestHandler<ProjectIdParams> = (
+  req,
+  res,
+  next,
+) => {
+  projectController.reorderProject(req, res, next);
+};
+
 router.patch("/:id", authenticate, authorize("admin"), updateProjectHandler);
+
+router.patch("/:id/order", authenticate, authorize("admin"), reorderProjectHandler);
 
 router.delete("/:id", authenticate, authorize("admin"), deleteProjectHandler);
 

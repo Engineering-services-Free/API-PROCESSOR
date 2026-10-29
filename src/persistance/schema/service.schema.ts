@@ -8,18 +8,19 @@ import {
   ServiceProcessStep,
   ServiceSeo,
 } from "../typings";
+import { isPersistenceFieldRequired } from "../required-fields.js";
 
 const serviceImageSchema = new Schema<ServiceImage>(
   {
     url: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("service", "heroImage.url"),
       trim: true,
     },
 
     alt: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("service", "heroImage.alt"),
       trim: true,
       maxlength: 200,
     },
@@ -38,14 +39,14 @@ const serviceCapabilitySchema = new Schema<ServiceCapability>(
   {
     title: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("service", "capabilities.title"),
       trim: true,
       maxlength: 150,
     },
 
     description: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("service", "capabilities.description"),
       trim: true,
       maxlength: 1000,
     },
@@ -65,20 +66,20 @@ const serviceProcessStepSchema = new Schema<ServiceProcessStep>(
   {
     step: {
       type: Number,
-      required: true,
+      required: isPersistenceFieldRequired("service", "process.step"),
       min: 1,
     },
 
     title: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("service", "process.title"),
       trim: true,
       maxlength: 150,
     },
 
     description: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("service", "process.description"),
       trim: true,
       maxlength: 1000,
     },
@@ -92,14 +93,14 @@ const serviceFaqSchema = new Schema<ServiceFaq>(
   {
     question: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("service", "faqs.question"),
       trim: true,
       maxlength: 300,
     },
 
     answer: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("service", "faqs.answer"),
       trim: true,
       maxlength: 2000,
     },
@@ -137,14 +138,14 @@ export const serviceSchema = new Schema<Service>(
   {
     title: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("service", "title"),
       trim: true,
       maxlength: 150,
     },
 
     slug: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("service", "slug"),
       unique: true,
       lowercase: true,
       trim: true,
@@ -160,14 +161,14 @@ export const serviceSchema = new Schema<Service>(
 
     shortDescription: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("service", "shortDescription"),
       trim: true,
       maxlength: 500,
     },
 
     heroImage: {
       type: serviceImageSchema,
-      required: true,
+      required: isPersistenceFieldRequired("service", "heroImage"),
     },
 
     summary: {
@@ -181,14 +182,14 @@ export const serviceSchema = new Schema<Service>(
 
     overview: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("service", "overview"),
       trim: true,
       maxlength: 5000,
     },
 
     detail: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("service", "detail"),
     },
 
     capabilities: {

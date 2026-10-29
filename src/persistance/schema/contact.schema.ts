@@ -5,19 +5,20 @@ import type {
   ContactLocation,
   ContactSocialMedia,
 } from "../typings/contact.typings";
+import { isPersistenceFieldRequired } from "../required-fields.js";
 
 const contactSocialMediaSchema = new Schema<ContactSocialMedia>(
   {
     platform: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("contact", "socialMedia.platform"),
       trim: true,
       maxlength: 50,
     },
 
     url: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("contact", "socialMedia.url"),
       trim: true,
     },
   },
@@ -30,7 +31,7 @@ const contactLocationSchema = new Schema<ContactLocation>(
   {
     mapUrl: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("contact", "location.mapUrl"),
       trim: true,
     },
   },
@@ -43,7 +44,7 @@ export const contactSchema = new Schema<Contact>(
   {
     contactNumber1: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("contact", "contactNumber1"),
       trim: true,
       maxlength: 30,
     },
@@ -56,14 +57,14 @@ export const contactSchema = new Schema<Contact>(
 
     whatsappNumber: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("contact", "whatsappNumber"),
       trim: true,
       maxlength: 30,
     },
 
     email: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("contact", "email"),
       trim: true,
       lowercase: true,
       maxlength: 254,
@@ -76,7 +77,7 @@ export const contactSchema = new Schema<Contact>(
 
     location: {
       type: contactLocationSchema,
-      required: true,
+      required: isPersistenceFieldRequired("contact", "location"),
     },
   },
   {

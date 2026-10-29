@@ -6,18 +6,19 @@ import type {
   ProjectResult,
   ProjectSeo,
 } from "../typings/project.typings";
+import { isPersistenceFieldRequired } from "../required-fields.js";
 
 const projectImageSchema = new Schema<ProjectImage>(
   {
     url: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("project", "heroImage.url"),
       trim: true,
     },
 
     alt: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("project", "heroImage.alt"),
       trim: true,
       maxlength: 200,
     },
@@ -36,14 +37,14 @@ const projectResultSchema = new Schema<ProjectResult>(
   {
     metric: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("project", "title"),
       trim: true,
       maxlength: 150,
     },
 
     value: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("project", "slug"),
       trim: true,
       maxlength: 150,
     },
@@ -87,14 +88,14 @@ export const projectSchema = new Schema<Project>(
   {
     title: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("project", "title"),
       trim: true,
       maxlength: 200,
     },
 
     slug: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("project", "slug"),
       unique: true,
       lowercase: true,
       trim: true,
@@ -102,11 +103,15 @@ export const projectSchema = new Schema<Project>(
       match: /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
     },
 
-    clientId: { type: Schema.Types.ObjectId, ref: "Client", required: true },
+    clientId: {
+      type: Schema.Types.ObjectId,
+      ref: "Client",
+      required: isPersistenceFieldRequired("project", "clientId"),
+    },
 
     industry: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("project", "industry"),
       trim: true,
       maxlength: 150,
       index: true,
@@ -120,21 +125,21 @@ export const projectSchema = new Schema<Project>(
 
     shortDescription: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("project", "shortDescription"),
       trim: true,
       maxlength: 500,
     },
 
     overview: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("project", "overview"),
       trim: true,
       maxlength: 20000,
     },
 
     heroImage: {
       type: projectImageSchema,
-      required: true,
+      required: isPersistenceFieldRequired("project", "heroImage"),
     },
 
     gallery: {
@@ -148,14 +153,14 @@ export const projectSchema = new Schema<Project>(
 
     challenge: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("project", "challenge"),
       trim: true,
       maxlength: 20000,
     },
 
     solution: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("project", "solution"),
       trim: true,
       maxlength: 20000,
     },
@@ -191,7 +196,7 @@ export const projectSchema = new Schema<Project>(
 
     year: {
       type: Number,
-      required: true,
+      required: isPersistenceFieldRequired("project", "year"),
       min: 1900,
       max: 2100,
     },

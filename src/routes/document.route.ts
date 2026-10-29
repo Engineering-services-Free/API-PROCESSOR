@@ -42,7 +42,22 @@ const deleteDocumentHandler: RequestHandler<DocumentIdParams> = (
   documentController.deleteDocument(req, res, next);
 };
 
+const reorderDocumentHandler: RequestHandler<DocumentIdParams> = (
+  req,
+  res,
+  next,
+) => {
+  documentController.reorderDocument(req, res, next);
+};
+
 router.patch("/:id", authenticate, authorize("admin"), updateDocumentHandler);
+
+router.patch(
+  "/:id/order",
+  authenticate,
+  authorize("admin"),
+  reorderDocumentHandler,
+);
 
 router.delete("/:id", authenticate, authorize("admin"), deleteDocumentHandler);
 

@@ -19,7 +19,7 @@ export class LandingPageDao {
     data: UpdateLandingPageInput,
   ): Promise<LandingPage | null> {
     return LandingPageModel.findOneAndUpdate({}, data, {
-      new: true,
+      returnDocument: "after",
       runValidators: true,
     })
       .lean<LandingPage>()

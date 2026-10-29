@@ -1,6 +1,7 @@
 import type { ErrorRequestHandler } from "express";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
+import { ZodError } from "zod";
 
 import { ApplicationError } from "./application.error.js";
 import type { ErrorDetail, ErrorResponse } from "./error.types.js";
@@ -51,6 +52,28 @@ export const errorHandler: ErrorRequestHandler = (error, _req, res, _next) => {
     };
 
     res.status(error.statusCode).json(response);
+
+    return;
+  }
+
+  // Zod validation errors
+
+  if (error instanceof ZodError) {
+    const details: ErrorDetail[] = error.issues.map((issue) => ({
+      field: issue.path.join(".") || "request",
+      message: issue.message,
+    }));
+
+    const response: ErrorResponse = {
+      success: false,
+      error: {
+        code: "VALIDATION_ERROR",
+        message: "Invalid request data",
+        details,
+      },
+    };
+
+    res.status(400).json(response);
 
     return;
   }

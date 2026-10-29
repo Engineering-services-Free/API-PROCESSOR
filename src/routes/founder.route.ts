@@ -42,7 +42,17 @@ const deleteFounderHandler: RequestHandler<FounderIdParams> = (
   founderController.deleteFounder(req, res, next);
 };
 
+const reorderFounderHandler: RequestHandler<FounderIdParams> = (
+  req,
+  res,
+  next,
+) => {
+  founderController.reorderFounder(req, res, next);
+};
+
 router.patch("/:id", authenticate, authorize("admin"), updateFounderHandler);
+
+router.patch("/:id/order", authenticate, authorize("admin"), reorderFounderHandler);
 
 router.delete("/:id", authenticate, authorize("admin"), deleteFounderHandler);
 

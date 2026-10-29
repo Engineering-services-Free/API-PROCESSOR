@@ -10,6 +10,12 @@ import {
   CreateDocumentInput,
   UpdateDocumentInput,
 } from "../common/validators/service.validator";
+import {
+  createOrderedRecord,
+  deleteOrderedRecord,
+  moveOrderedRecord,
+  updateOrderedRecord,
+} from "../common/ordering/order-sequence.service.js";
 
 export interface FindDocumentsFilter {
   type?:
@@ -32,10 +38,17 @@ export class DocumentDao {
   public async createDocument(data: CreateDocumentInput): Promise<Document> {
     const { clientId, ...documentData } = data;
 
-    return DocumentModel.create({
-      ...documentData,
-      ...(clientId ? { clientId: new Types.ObjectId(clientId) } : {}),
-    });
+    return createOrderedRecord(
+      "documents",
+      DocumentModel,
+      {
+        ...documentData,
+        ...(clientId ? { clientId: new Types.ObjectId(clientId) } : {}),
+      },
+      "clientId",
+      clientId ? new Types.ObjectId(clientId) : null,
+      { createdAt: -1 },
+    );
   }
 
  public async findDocuments(
@@ -106,16 +119,38 @@ export class DocumentDao {
           }),
     };
 
-    return DocumentModel.findByIdAndUpdate(id, update, {
-      new: true,
-      runValidators: true,
-    })
-      .lean<Document>()
-      .exec();
+    return updateOrderedRecord(
+      "documents",
+      DocumentModel,
+      id,
+      update,
+      "clientId",
+      { createdAt: -1 },
+    );
   }
 
   public async deleteDocumentById(id: string): Promise<Document | null> {
-    return DocumentModel.findByIdAndDelete(id).lean<Document>().exec();
+    return deleteOrderedRecord(
+      "documents",
+      DocumentModel,
+      id,
+      "clientId",
+      { createdAt: -1 },
+    );
+  }
+
+  public async reorderDocumentById(
+    id: string,
+    order: number,
+  ): Promise<Document | null> {
+    return moveOrderedRecord(
+      "documents",
+      DocumentModel,
+      id,
+      order,
+      "clientId",
+      { createdAt: -1 },
+    );
   }
 }
 

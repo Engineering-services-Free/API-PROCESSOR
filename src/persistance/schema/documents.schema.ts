@@ -1,18 +1,19 @@
 import { Schema } from "mongoose";
 
 import type { Document, DocumentFile } from "../typings/document.typings";
+import { isPersistenceFieldRequired } from "../required-fields.js";
 
 const documentFileSchema = new Schema<DocumentFile>(
   {
     url: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("document", "file.url"),
       trim: true,
     },
 
     storagePath: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("document", "file.storagePath"),
       trim: true,
     },
   },
@@ -25,14 +26,14 @@ export const documentSchema = new Schema<Document>(
   {
     title: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("document", "title"),
       trim: true,
       maxlength: 200,
     },
 
     type: {
       type: String,
-      required: true,
+      required: isPersistenceFieldRequired("document", "type"),
       enum: [
         "brochure",
         "certificate",
@@ -56,14 +57,14 @@ export const documentSchema = new Schema<Document>(
 
     file: {
       type: documentFileSchema,
-      required: true,
+      required: isPersistenceFieldRequired("document", "file"),
     },
 
     visibility: {
       type: String,
       enum: ["public", "internal"],
       default: "internal",
-      required: true,
+      required: isPersistenceFieldRequired("document", "visibility"),
     },
 
     order: {

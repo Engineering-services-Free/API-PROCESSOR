@@ -1,5 +1,3 @@
-import { UpdateQuery } from "mongoose";
-
 import {
   PaginatedResult,
   PaginationQuery,
@@ -11,6 +9,12 @@ import {
   CreateProjectInput,
   UpdateProjectInput,
 } from "../common/validators/service.validator";
+import {
+  createOrderedRecord,
+  deleteOrderedRecord,
+  moveOrderedRecord,
+  updateOrderedRecord,
+} from "../common/ordering/order-sequence.service.js";
 
 export interface FindProjectsFilter {
   status?: "draft" | "published" | "archived";
@@ -24,7 +28,14 @@ export interface FindProjectsOptions extends PaginationQuery {
 
 export class ProjectDao {
   public async createProject(data: CreateProjectInput): Promise<Project> {
-    return ProjectModel.create(data);
+    return createOrderedRecord(
+      "projects",
+      ProjectModel,
+      data,
+      undefined,
+      undefined,
+      { year: -1, createdAt: -1 },
+    );
   }
 
   public async findProjects(
@@ -76,16 +87,38 @@ export class ProjectDao {
     id: string,
     data: UpdateProjectInput,
   ): Promise<Project | null> {
-    return ProjectModel.findByIdAndUpdate(id, data, {
-      new: true,
-      runValidators: true,
-    })
-      .lean<Project>()
-      .exec();
+    return updateOrderedRecord(
+      "projects",
+      ProjectModel,
+      id,
+      data,
+      undefined,
+      { year: -1, createdAt: -1 },
+    );
   }
 
   public async deleteProjectById(id: string): Promise<Project | null> {
-    return ProjectModel.findByIdAndDelete(id).lean<Project>().exec();
+    return deleteOrderedRecord(
+      "projects",
+      ProjectModel,
+      id,
+      undefined,
+      { year: -1, createdAt: -1 },
+    );
+  }
+
+  public async reorderProjectById(
+    id: string,
+    order: number,
+  ): Promise<Project | null> {
+    return moveOrderedRecord(
+      "projects",
+      ProjectModel,
+      id,
+      order,
+      undefined,
+      { year: -1, createdAt: -1 },
+    );
   }
 }
 

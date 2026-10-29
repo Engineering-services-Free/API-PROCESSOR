@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import { blogService } from "../service/index";
+import { validateOrderMove } from "../common/ordering/order-sequence.service.js";
 
 interface BlogIdParams {
   id: string;
@@ -112,6 +113,24 @@ export class BlogController {
       next(error);
     }
   }
+
+  public async reorderBlog(
+      req: Request<BlogIdParams>,
+      res: Response,
+      next: NextFunction,
+    ): Promise<void> {
+      try {
+        const { order } = validateOrderMove({
+          id: req.params.id,
+          order: req.body?.order,
+        });
+        const blog = await blogService.reorderBlog(req.params.id, order);
+
+        res.status(200).json({ success: true, data: blog });
+      } catch (error) {
+        next(error);
+      }
+    }
 }
 
 export const blogController = new BlogController();

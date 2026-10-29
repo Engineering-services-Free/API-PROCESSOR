@@ -186,6 +186,14 @@ export class ProjectService {
 
     const deletedProject = await this.dao.deleteProjectById(id);
 
+    if (!deletedProject) {
+      throw new ApplicationError(
+        "Failed to delete project",
+        500,
+        "INTERNAL_SERVER_ERROR",
+      );
+    }
+
     /*
      * Collect hero image + gallery files.
      */
@@ -207,6 +215,16 @@ export class ProjectService {
     await this.cleanupStorage(storagePaths);
 
     return deletedProject;
+  }
+
+  public async reorderProject(id: string, order: number) {
+    const project = await this.dao.reorderProjectById(id, order);
+
+    if (!project) {
+      throw new ApplicationError("Project not found", 404, "NOT_FOUND");
+    }
+
+    return project;
   }
 }
 

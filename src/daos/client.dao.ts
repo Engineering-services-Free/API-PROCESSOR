@@ -68,7 +68,7 @@ export class ClientDao {
     data: UpdateClientInput,
   ): Promise<Client | null> {
     return ClientModel.findByIdAndUpdate(id, data, {
-      new: true,
+      returnDocument: "after",
       runValidators: true,
     })
       .lean<Client>()

@@ -121,6 +121,16 @@ export class FounderService {
 
     return deletedFounder;
   }
+
+  public async reorderFounder(id: string, order: number) {
+    const founder = await this.dao.reorderFounderById(id, order);
+
+    if (!founder) {
+      throw new ApplicationError("Founder not found", 404, "NOT_FOUND");
+    }
+
+    return founder;
+  }
 }
 
 export const founderService = new FounderService();
