@@ -23,6 +23,7 @@ export interface Blog {
 
   overview: string;
 
+  cardImage?: BlogImage;
   coverImage: BlogImage;
 
   /**

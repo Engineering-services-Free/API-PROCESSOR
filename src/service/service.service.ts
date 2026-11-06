@@ -112,14 +112,19 @@ export class ServiceService {
       }
     }
 
-    const oldStoragePath = existingService.heroImage?.storagePath;
-
-    const newStoragePath = validatedData.heroImage?.storagePath;
+    const oldHeroStoragePath = existingService.heroImage?.storagePath;
+    const newHeroStoragePath = validatedData.heroImage?.storagePath;
+    const oldCardStoragePath = existingService.cardImage?.storagePath;
+    const newCardStoragePath = validatedData.cardImage?.storagePath;
 
     const isNewHeroImage =
-      Boolean(oldStoragePath) &&
-      Boolean(newStoragePath) &&
-      oldStoragePath !== newStoragePath;
+      Boolean(oldHeroStoragePath) &&
+      Boolean(newHeroStoragePath) &&
+      oldHeroStoragePath !== newHeroStoragePath;
+    const isNewCardImage =
+      Boolean(oldCardStoragePath) &&
+      Boolean(newCardStoragePath) &&
+      oldCardStoragePath !== newCardStoragePath;
 
     const updatedService = await this.dao.updateServiceById(
       id,
@@ -134,8 +139,12 @@ export class ServiceService {
       );
     }
 
-    if (isNewHeroImage && oldStoragePath) {
-      await deleteStorageFile(oldStoragePath);
+    if (isNewHeroImage && oldHeroStoragePath) {
+      await deleteStorageFile(oldHeroStoragePath);
+    }
+
+    if (isNewCardImage && oldCardStoragePath) {
+      await deleteStorageFile(oldCardStoragePath);
     }
 
     return updatedService;
@@ -164,6 +173,10 @@ export class ServiceService {
      */
     if (existingService.heroImage.storagePath) {
       await deleteStorageFile(existingService.heroImage.storagePath);
+    }
+
+    if (existingService.cardImage?.storagePath) {
+      await deleteStorageFile(existingService.cardImage.storagePath);
     }
 
     return deletedService;

@@ -110,6 +110,15 @@ export class BlogService {
       await deleteStorageFile(existingBlog.coverImage.storagePath);
     }
 
+    if (
+      validatedData.cardImage?.storagePath &&
+      existingBlog.cardImage?.storagePath &&
+      validatedData.cardImage.storagePath !==
+        existingBlog.cardImage.storagePath
+    ) {
+      await deleteStorageFile(existingBlog.cardImage.storagePath);
+    }
+
     return updatedBlog;
   }
 
@@ -136,6 +145,10 @@ export class BlogService {
      */
     if (existingBlog.coverImage.storagePath) {
       await deleteStorageFile(existingBlog.coverImage.storagePath);
+    }
+
+    if (existingBlog.cardImage?.storagePath) {
+      await deleteStorageFile(existingBlog.cardImage.storagePath);
     }
 
     return deletedBlog;

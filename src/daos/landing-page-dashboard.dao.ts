@@ -27,6 +27,7 @@ export interface PublicLandingProject {
   shortDescription: string;
   industry: string;
   year: number;
+  cardImage?: PublicImage;
   heroImage: PublicImage;
   createdAt: Date;
 }
@@ -88,6 +89,13 @@ export class LandingPageDashboardDao {
             shortDescription: 1,
             industry: 1,
             year: 1,
+            cardImage: {
+              $cond: [
+                { $ifNull: ["$cardImage.url", false] },
+                { url: "$cardImage.url", alt: "$cardImage.alt" },
+                "$$REMOVE",
+              ],
+            },
             heroImage: { url: "$heroImage.url", alt: "$heroImage.alt" },
             createdAt: 1,
           },

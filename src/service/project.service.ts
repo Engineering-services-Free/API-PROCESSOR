@@ -138,6 +138,15 @@ export class ProjectService {
       storagePathsToDelete.push(existingProject.heroImage.storagePath);
     }
 
+    if (
+      validatedData.cardImage?.storagePath &&
+      existingProject.cardImage?.storagePath &&
+      validatedData.cardImage.storagePath !==
+        existingProject.cardImage.storagePath
+    ) {
+      storagePathsToDelete.push(existingProject.cardImage.storagePath);
+    }
+
     /*
      * 2. Gallery image removal/replacement
      *
@@ -201,6 +210,10 @@ export class ProjectService {
 
     if (existingProject.heroImage.storagePath) {
       storagePaths.push(existingProject.heroImage.storagePath);
+    }
+
+    if (existingProject.cardImage?.storagePath) {
+      storagePaths.push(existingProject.cardImage.storagePath);
     }
 
     storagePaths.push(

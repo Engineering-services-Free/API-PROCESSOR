@@ -94,6 +94,10 @@ export const blogSchema = new Schema<Blog>(
       maxlength: 5000,
     },
 
+    cardImage: {
+      type: blogImageSchema,
+    },
+
     coverImage: {
       type: blogImageSchema,
       required: isPersistenceFieldRequired("blog", "coverImage"),
