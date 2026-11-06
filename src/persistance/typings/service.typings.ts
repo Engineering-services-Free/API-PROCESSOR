@@ -35,6 +35,7 @@ export interface Service {
   tagline?: string;
   shortDescription: string;
 
+  cardImage?: ServiceImage;
   heroImage: ServiceImage;
 
   summary: string[];

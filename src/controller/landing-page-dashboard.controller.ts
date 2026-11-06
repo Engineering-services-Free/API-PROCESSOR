@@ -12,6 +12,7 @@ export class LandingPageDashboardController {
       const data =
         await landingPageDashboardService.getLandingPageDashboard();
 
+      res.setHeader("Cache-Control", "no-cache");
       res.status(200).json({
         success: true,
         message: "Website landing page data retrieved successfully",

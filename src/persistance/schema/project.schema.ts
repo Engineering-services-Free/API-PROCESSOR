@@ -137,6 +137,10 @@ export const projectSchema = new Schema<Project>(
       maxlength: 20000,
     },
 
+    cardImage: {
+      type: projectImageSchema,
+    },
+
     heroImage: {
       type: projectImageSchema,
       required: isPersistenceFieldRequired("project", "heroImage"),

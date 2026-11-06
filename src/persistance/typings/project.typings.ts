@@ -35,6 +35,7 @@ export interface Project {
 
   overview: string;
 
+  cardImage?: ProjectImage;
   heroImage: ProjectImage;
 
   gallery: ProjectImage[];

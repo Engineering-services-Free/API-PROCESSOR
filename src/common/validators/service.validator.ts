@@ -26,6 +26,14 @@ export const serviceSchema = z.object({
 
   shortDescription: z.string().min(1).max(500),
 
+  cardImage: z
+    .object({
+      url: z.string().url(),
+      alt: z.string().min(1),
+      storagePath: z.string().optional(),
+    })
+    .optional(),
+
   heroImage: z.object({
     url: z.string().url(),
     alt: z.string().min(1),
@@ -90,6 +98,7 @@ export const updateServiceSchema = z.object({
   tagline: serviceSchema.shape.tagline.optional(),
   shortDescription: serviceSchema.shape.shortDescription.optional(),
 
+  cardImage: serviceSchema.shape.cardImage.unwrap().partial().optional(),
   heroImage: serviceSchema.shape.heroImage.partial().optional(),
 
   summary: serviceSchema.shape.summary.optional(),
@@ -150,6 +159,7 @@ export const projectSchema = z.object({
   shortDescription: z.string().trim().min(1).max(500),
   overview: z.string().min(1).max(20000),
 
+  cardImage: projectImageSchema.optional(),
   heroImage: projectImageSchema,
   gallery: z.array(projectImageSchema).max(30),
 
@@ -185,7 +195,30 @@ export const projectSchema = z.object({
     .optional(),
 });
 
-export const updateProjectSchema = projectSchema.partial();
+export const updateProjectSchema = z.object({
+  title: projectSchema.shape.title.optional(),
+  slug: projectSchema.shape.slug.optional(),
+  clientId: projectSchema.shape.clientId.optional(),
+  industry: projectSchema.shape.industry.optional(),
+  location: projectSchema.shape.location.optional(),
+  shortDescription: projectSchema.shape.shortDescription.optional(),
+  overview: projectSchema.shape.overview.optional(),
+  cardImage: projectSchema.shape.cardImage.unwrap().partial().optional(),
+  heroImage: projectSchema.shape.heroImage.partial().optional(),
+  gallery: projectSchema.shape.gallery.optional(),
+  challenge: projectSchema.shape.challenge.optional(),
+  solution: projectSchema.shape.solution.optional(),
+  engineeringScope: projectSchema.shape.engineeringScope.optional(),
+  technologies: projectSchema.shape.technologies.optional(),
+  results: projectSchema.shape.results.optional(),
+  duration: projectSchema.shape.duration.optional(),
+  year: projectSchema.shape.year.optional(),
+  status: projectSchema.shape.status.optional(),
+  featured: projectSchema.shape.featured.optional(),
+  order: projectSchema.shape.order.optional(),
+  relatedServices: projectSchema.shape.relatedServices.optional(),
+  seo: projectSchema.shape.seo.optional(),
+});
 
 export const projectQuerySchema = paginationSchema.extend({
   status: z.enum(["draft", "published", "archived"]).optional(),
@@ -244,6 +277,7 @@ export const blogSchema = z.object({
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Invalid slug"),
   shortDescription: z.string().trim().min(1).max(500),
   overview: z.string().trim().min(1).max(5000),
+  cardImage: blogImageSchema.optional(),
   coverImage: blogImageSchema,
   content: z.string().min(1),
   projectId: z.string().regex(/^[0-9a-fA-F]{24}$/),
@@ -263,7 +297,24 @@ export const blogSchema = z.object({
     .optional(),
 });
 
-export const updateBlogSchema = blogSchema.partial();
+export const updateBlogSchema = z.object({
+  title: blogSchema.shape.title.optional(),
+  slug: blogSchema.shape.slug.optional(),
+  shortDescription: blogSchema.shape.shortDescription.optional(),
+  overview: blogSchema.shape.overview.optional(),
+  cardImage: blogSchema.shape.cardImage.unwrap().partial().optional(),
+  coverImage: blogSchema.shape.coverImage.partial().optional(),
+  content: blogSchema.shape.content.optional(),
+  projectId: blogSchema.shape.projectId.optional(),
+  technologies: blogSchema.shape.technologies.optional(),
+  keyTakeaways: blogSchema.shape.keyTakeaways.optional(),
+  readingTime: blogSchema.shape.readingTime.optional(),
+  status: blogSchema.shape.status.optional(),
+  featured: blogSchema.shape.featured.optional(),
+  order: blogSchema.shape.order.optional(),
+  publishedAt: blogSchema.shape.publishedAt.optional(),
+  seo: blogSchema.shape.seo.optional(),
+});
 
 export const blogQuerySchema = paginationSchema.extend({
   status: z.enum(["draft", "published", "archived"]).optional(),

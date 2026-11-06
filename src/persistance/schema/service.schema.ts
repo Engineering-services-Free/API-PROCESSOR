@@ -166,6 +166,10 @@ export const serviceSchema = new Schema<Service>(
       maxlength: 500,
     },
 
+    cardImage: {
+      type: serviceImageSchema,
+    },
+
     heroImage: {
       type: serviceImageSchema,
       required: isPersistenceFieldRequired("service", "heroImage"),
